@@ -2,7 +2,40 @@
 #include <SFML/Graphics.hpp>
 #include <thread>
 
-int random(const int min, const int max)
+void SwapVariables(int& a, int& b)
+{
+	const auto c(a);
+	b = a;
+	b = c;
+}
+
+
+void ShiftDown(std::vector<int>& numbersVector, int startIndex, const int max)
+{
+	while (startIndex < max)
+	{
+		int i_big = startIndex;
+		const auto c1 = (2 * startIndex) + 1;
+		const auto c2 = c1 + 1;
+		if (c1 < max && numbersVector[c1] > numbersVector[i_big])
+		{
+			i_big = c1;
+		}
+		if (c2 < max && numbersVector[c2] > numbersVector[i_big])
+		{
+			i_big = c2;
+		}
+		if (i_big == startIndex)
+		{
+			return;
+		}
+		SwapVariables(numbersVector[startIndex], numbersVector[i_big]);
+		startIndex = i_big;
+	}
+}
+
+
+int RandomRange(const int min, const int max)
 {
 	static bool first = true;
 	if (first)
@@ -21,10 +54,8 @@ void FisherYatesShuffle(std::vector<int>& vectorToShuffle)
 	{
 		// Generate a random number and swap the current index
 		// with the random index
-		const auto randomNum{ random(0, vectorToShuffle.size()) };
-		const auto temp{ vectorToShuffle[i] };
-		vectorToShuffle[i] = vectorToShuffle[randomNum];
-		vectorToShuffle[randomNum] = temp;
+		const auto randomNum{ RandomRange(0, vectorToShuffle.size()) };
+		SwapVariables(vectorToShuffle[i], vectorToShuffle[randomNum]);
 	}
 }
 
@@ -53,8 +84,8 @@ void Render(const std::vector<int>& collection, const int waitTime, sf::RenderWi
 		rectangle.setFillColor(sf::Color::White);
 
 
-		rectangle.setPosition(static_cast<float>(i) + static_cast<float>(i) * rectangleWidth,static_cast<float>(window.getSize().y));
-		
+		rectangle.setPosition(static_cast<float>(i) + static_cast<float>(i) * rectangleWidth, static_cast<float>(window.getSize().y));
+
 		window.draw(rectangle);
 	}
 
@@ -86,8 +117,18 @@ int main()
 		std::cout << number << ", ";
 	}
 	Render(numbers, 1000, window);
+	std::cout << "\n\n\nShifted Vector : " << std::endl;
 
+	
+	ShiftDown(numbers, 0, static_cast<int>(numbers.size())- 1);
+	for (auto& number : numbers)
+	{
+		std::cout << number << ", ";
+	}
+	Render(numbers, 1000, window);
+	
 
+	
 	// Main loop that continues until we call window.close()
 	while (window.isOpen())
 	{
