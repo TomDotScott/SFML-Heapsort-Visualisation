@@ -7,7 +7,7 @@ void generate_numbers_vector(std::vector<int>& numbersVector, const int max);
 void fisher_yates_shuffle(std::vector<int>& vectorToShuffle);
 int random_range(const int min, const int max);
 void swap_variables(int& a, int& b, const int waitTime);
-void render(const std::vector<int>& numbersVector, const int waitTime);
+void render(const std::vector<int>& numbersVector, const int swappedValue, const int waitTime);
 
 // Heap-sort functions
 void shift_down(std::vector<int>& numbersVector, int start, const int end);
@@ -30,7 +30,7 @@ int main()
 	{
 		std::cout << number << ", ";
 	}
-	render(NUMBERS, 1000);
+	render(NUMBERS, -1, 1000);
 	
 	std::cout << "\n\n\nShuffled Vector : " << std::endl;
 	fisher_yates_shuffle(NUMBERS);
@@ -38,12 +38,12 @@ int main()
 	{
 		std::cout << number << ", ";
 	}
-	render(NUMBERS, 1000);
+	render(NUMBERS, -1, 1000);
 	
 	std::cout << "\n\n\Heapsort : " << std::endl;
 	heap_sort(NUMBERS);
 	
-	render(NUMBERS, 1000);
+	render(NUMBERS, -1, 1000);
 	
 
 	
@@ -68,7 +68,7 @@ int main()
 		// We must clear the window each time around the loop
 		WINDOW.clear();
 
-		render(NUMBERS, 1.f);
+		render(NUMBERS, -1, 1.f);
 
 
 		// Get the window to display its contents
@@ -115,25 +115,24 @@ void swap_variables(int& a, int& b, const int waitTime)
 	a = b;
 	b = c;
 
-	render(NUMBERS, waitTime);
+	render(NUMBERS, a, waitTime);
 }
 
-void render(const std::vector<int>& numbersVector, const int waitTime)
+void render(const std::vector<int>& numbersVector, const int swappedValue, const int waitTime)
 {
 	// We must clear the window each time around the loop
 	WINDOW.clear();
 
 	const float rectangleWidth{ static_cast<float>(WINDOW.getSize().x) / numbersVector.size() - 1 };
 
-	for (unsigned i = 0; i < numbersVector.size(); ++i)
+	for (auto i = 0; i < numbersVector.size(); ++i)
 	{
 		sf::RectangleShape rectangle(
 			{ rectangleWidth, (static_cast<float>(numbersVector[i] + 1) / numbersVector.size()) * (static_cast<float>(WINDOW.getSize().y) - 100) }
 		);
 		rectangle.setOrigin(0, rectangle.getGlobalBounds().height);
 
-		rectangle.setFillColor(sf::Color::White);
-
+		rectangle.setFillColor(swappedValue == i ? sf::Color::Red : sf::Color::White);
 
 		rectangle.setPosition(static_cast<float>(i) + static_cast<float>(i) * rectangleWidth, static_cast<float>(WINDOW.getSize().y));
 
@@ -199,7 +198,7 @@ void heap_sort(std::vector<int>& numbersVector)
 	// Place in a max-heap order...
 	heapify(numbersVector, numbersVector.size());
 
-	render(numbersVector, 1000.f);
+	render(numbersVector, -1, 1000.f);
 
 	int end = numbersVector.size() - 1;
 
@@ -212,7 +211,7 @@ void heap_sort(std::vector<int>& numbersVector)
 		swap_variables(numbersVector[end], numbersVector[0], 100);
 
 		// Decrement the size of the heap so that the previous max value will stay in its place
-		end--;
+		--end;
 
 		// Put the heap back into max heap order
 		shift_down(numbersVector, 0, end);
