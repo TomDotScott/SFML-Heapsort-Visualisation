@@ -3,13 +3,7 @@
 #include <thread>
 
 sf::RenderWindow window(sf::VideoMode(800, 600), "Heapsort Visualisation");
-
-void SwapVariables(int& a, int& b)
-{
-	const auto c(a);
-	a = b;
-	b = c;
-}
+std::vector<int> numbers;
 
 void Render(const std::vector<int>& collection, const int waitTime)
 {
@@ -37,6 +31,15 @@ void Render(const std::vector<int>& collection, const int waitTime)
 	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
 }
 
+void SwapVariables(int& a, int& b, const int waitTime)
+{
+	const auto c(a);
+	a = b;
+	b = c;
+
+	Render(numbers, waitTime);	
+}
+
 void ShiftDown(std::vector<int>& numbersVector, int startIndex, const int max)
 {
 	int root = startIndex;
@@ -49,9 +52,8 @@ void ShiftDown(std::vector<int>& numbersVector, int startIndex, const int max)
 		}
 		if(numbersVector[root] < numbersVector[child])
 		{
-			SwapVariables(numbersVector[root], numbersVector[child]);
+			SwapVariables(numbersVector[root], numbersVector[child], 50);
 			root = child;
-			Render(numbersVector, 100.f);
 		}else
 		{
 			return;
@@ -66,6 +68,35 @@ void Heapify(std::vector<int>& numbersVector, const int count)
 	{
 		ShiftDown(numbersVector, start, count - 1);
 		start--;
+	}
+
+	std::cout << "Heapified Vector:\n";
+	for (auto& number : numbersVector)
+	{
+		std::cout << number << ", ";
+	}
+}
+
+void HeapSort(std::vector<int>& numbersVector)
+{
+	Heapify(numbersVector, numbersVector.size());
+	
+	Render(numbersVector, 1000.f);
+	
+	int end = numbersVector.size() - 1;
+	
+	int count{ 0 };
+	
+	while(end > 0)
+	{
+		SwapVariables(numbersVector[end], numbersVector[0], 100);
+		end--;
+		ShiftDown(numbersVector, 0, end);
+		std::cout << "\nStep " + std::to_string(count++) <<":\n";
+		for (auto& number : numbersVector)
+		{
+			std::cout << number << ", ";
+		}
 	}
 }
 
@@ -90,7 +121,7 @@ void FisherYatesShuffle(std::vector<int>& vectorToShuffle)
 		// Generate a random number and swap the current index
 		// with the random index
 		const auto randomNum{ RandomRange(0, vectorToShuffle.size()) };
-		SwapVariables(vectorToShuffle[i], vectorToShuffle[randomNum]);
+		SwapVariables(vectorToShuffle[i], vectorToShuffle[randomNum], 10);
 	}
 }
 
@@ -105,11 +136,10 @@ void GenerateNumbersVector(std::vector<int>& numbersVector, const int max)
 
 int main()
 {
-
 	std::cout << "How many numbers would you like to deal with?" << std::endl;
 	int n{ 0 };
 	std::cin >> n;
-	std::vector<int> numbers;
+	
 	GenerateNumbersVector(numbers, n);
 	std::cout << "Vector from 1 to n: " << std::endl;
 	for (auto& number : numbers)
@@ -117,22 +147,18 @@ int main()
 		std::cout << number << ", ";
 	}
 	Render(numbers, 1000);
+	
 	std::cout << "\n\n\nShuffled Vector : " << std::endl;
-
 	FisherYatesShuffle(numbers);
 	for (auto& number : numbers)
 	{
 		std::cout << number << ", ";
 	}
 	Render(numbers, 1000);
-	std::cout << "\n\n\Heapified Vector : " << std::endl;
-
 	
-	Heapify(numbers, numbers.size());
-	for (auto& number : numbers)
-	{
-		std::cout << number << ", ";
-	}
+	std::cout << "\n\n\Heapsort : " << std::endl;
+	HeapSort(numbers);
+	
 	Render(numbers, 1000);
 	
 
@@ -158,7 +184,7 @@ int main()
 		// We must clear the window each time around the loop
 		window.clear();
 
-
+		Render(numbers, 1.f);
 
 
 		// Get the window to display its contents
