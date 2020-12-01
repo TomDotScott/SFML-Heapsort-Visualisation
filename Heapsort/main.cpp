@@ -2,106 +2,102 @@
 #include <SFML/Graphics.hpp>
 #include <thread>
 
-sf::RenderWindow window(sf::VideoMode(800, 600), "Heapsort Visualisation");
-std::vector<int> numbers;
+// Utilities
+void generate_numbers_vector(std::vector<int>& numbersVector, const int max);
+void fisher_yates_shuffle(std::vector<int>& vectorToShuffle);
+int random_range(const int min, const int max);
+void swap_variables(int& a, int& b, const int waitTime);
+void render(const std::vector<int>& numbersVector, const int waitTime);
 
-void Render(const std::vector<int>& collection, const int waitTime)
+// Heap-sort functions
+void shift_down(std::vector<int>& numbersVector, int start, const int end);
+void heapify(std::vector<int>& numbersVector, const int count);
+void heap_sort(std::vector<int>& numbersVector);
+
+// Globals
+sf::RenderWindow WINDOW(sf::VideoMode(800, 600), "Heap-sort Visualisation");
+std::vector<int> NUMBERS;
+
+int main()
 {
-	// We must clear the window each time around the loop
-	window.clear();
-
-	const float rectangleWidth{ static_cast<float>(window.getSize().x) / collection.size() - 1 };
-
-	for (unsigned i = 0; i < collection.size(); ++i)
-	{
-		sf::RectangleShape rectangle(
-			{ rectangleWidth, (static_cast<float>(collection[i] + 1) / collection.size()) * (static_cast<float>(window.getSize().y) - 100) }
-		);
-		rectangle.setOrigin(0, rectangle.getGlobalBounds().height);
-
-		rectangle.setFillColor(sf::Color::White);
-
-
-		rectangle.setPosition(static_cast<float>(i) + static_cast<float>(i) * rectangleWidth, static_cast<float>(window.getSize().y));
-
-		window.draw(rectangle);
-	}
-
-	window.display();
-	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
-}
-
-void SwapVariables(int& a, int& b, const int waitTime)
-{
-	const auto c(a);
-	a = b;
-	b = c;
-
-	Render(numbers, waitTime);	
-}
-
-void ShiftDown(std::vector<int>& numbersVector, int startIndex, const int max)
-{
-	int root = startIndex;
-	while(root * 2 + 1 <= max)
-	{
-		int child = root * 2 + 1;
-		if(child + 1 < max && numbersVector[child] < numbersVector[child + 1])
-		{
-			child++;
-		}
-		if(numbersVector[root] < numbersVector[child])
-		{
-			SwapVariables(numbersVector[root], numbersVector[child], 50);
-			root = child;
-		}else
-		{
-			return;
-		}
-	}
-}
-
-void Heapify(std::vector<int>& numbersVector, const int count)
-{
-	int start = (count - 2) / 2;
-	while(start >= 0)
-	{
-		ShiftDown(numbersVector, start, count - 1);
-		start--;
-	}
-
-	std::cout << "Heapified Vector:\n";
-	for (auto& number : numbersVector)
+	std::cout << "How many numbers would you like to deal with?" << std::endl;
+	int n{ 0 };
+	std::cin >> n;
+	
+	generate_numbers_vector(NUMBERS, n);
+	std::cout << "Vector from 1 to n: " << std::endl;
+	for (auto& number : NUMBERS)
 	{
 		std::cout << number << ", ";
 	}
+	render(NUMBERS, 1000);
+	
+	std::cout << "\n\n\nShuffled Vector : " << std::endl;
+	fisher_yates_shuffle(NUMBERS);
+	for (auto& number : NUMBERS)
+	{
+		std::cout << number << ", ";
+	}
+	render(NUMBERS, 1000);
+	
+	std::cout << "\n\n\Heapsort : " << std::endl;
+	heap_sort(NUMBERS);
+	
+	render(NUMBERS, 1000);
+	
+
+	
+	// Main loop that continues until we call window.close()
+	while (WINDOW.isOpen())
+	{
+		// Handle any pending SFML events
+		// These cover keyboard, mouse,joystick etc.
+		sf::Event event{};
+		while (WINDOW.pollEvent(event))
+		{
+			switch (event.type)
+			{
+			case sf::Event::Closed:
+				WINDOW.close();
+				break;
+			default:
+				break;
+			}
+		}
+
+		// We must clear the window each time around the loop
+		WINDOW.clear();
+
+		render(NUMBERS, 1.f);
+
+
+		// Get the window to display its contents
+		WINDOW.display();
+	}
+
+	return 0;
 }
 
-void HeapSort(std::vector<int>& numbersVector)
+void generate_numbers_vector(std::vector<int>& numbersVector, const int max)
 {
-	Heapify(numbersVector, numbersVector.size());
-	
-	Render(numbersVector, 1000.f);
-	
-	int end = numbersVector.size() - 1;
-	
-	int count{ 0 };
-	
-	while(end > 0)
+	for (int i = 0; i < max; ++i)
 	{
-		SwapVariables(numbersVector[end], numbersVector[0], 100);
-		end--;
-		ShiftDown(numbersVector, 0, end);
-		std::cout << "\nStep " + std::to_string(count++) <<":\n";
-		for (auto& number : numbersVector)
-		{
-			std::cout << number << ", ";
-		}
+		numbersVector.emplace_back(i);
 	}
 }
 
+void fisher_yates_shuffle(std::vector<int>& vectorToShuffle)
+{
+	for (size_t i = 0; i < vectorToShuffle.size(); ++i)
+	{
+		// Generate a random number and swap the current index
+		// with the random index
+		const auto randomNum{ random_range(0, vectorToShuffle.size()) };
+		swap_variables(vectorToShuffle[i], vectorToShuffle[randomNum], 10);
+	}
+}
 
-int RandomRange(const int min, const int max)
+int random_range(const int min, const int max)
 {
 	static bool first = true;
 	if (first)
@@ -113,83 +109,117 @@ int RandomRange(const int min, const int max)
 	return min + rand() % ((max)-min);
 }
 
-
-void FisherYatesShuffle(std::vector<int>& vectorToShuffle)
+void swap_variables(int& a, int& b, const int waitTime)
 {
-	for (size_t i = 0; i < vectorToShuffle.size(); ++i)
-	{
-		// Generate a random number and swap the current index
-		// with the random index
-		const auto randomNum{ RandomRange(0, vectorToShuffle.size()) };
-		SwapVariables(vectorToShuffle[i], vectorToShuffle[randomNum], 10);
-	}
+	const auto c(a);
+	a = b;
+	b = c;
+
+	render(NUMBERS, waitTime);
 }
 
-void GenerateNumbersVector(std::vector<int>& numbersVector, const int max)
+void render(const std::vector<int>& numbersVector, const int waitTime)
 {
-	for (int i = 0; i < max; ++i)
+	// We must clear the window each time around the loop
+	WINDOW.clear();
+
+	const float rectangleWidth{ static_cast<float>(WINDOW.getSize().x) / numbersVector.size() - 1 };
+
+	for (unsigned i = 0; i < numbersVector.size(); ++i)
 	{
-		numbersVector.emplace_back(i);
+		sf::RectangleShape rectangle(
+			{ rectangleWidth, (static_cast<float>(numbersVector[i] + 1) / numbersVector.size()) * (static_cast<float>(WINDOW.getSize().y) - 100) }
+		);
+		rectangle.setOrigin(0, rectangle.getGlobalBounds().height);
+
+		rectangle.setFillColor(sf::Color::White);
+
+
+		rectangle.setPosition(static_cast<float>(i) + static_cast<float>(i) * rectangleWidth, static_cast<float>(WINDOW.getSize().y));
+
+		WINDOW.draw(rectangle);
 	}
+
+	WINDOW.display();
+	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
 }
 
-
-int main()
+void shift_down(std::vector<int>& numbersVector, const int start, const int end)
 {
-	std::cout << "How many numbers would you like to deal with?" << std::endl;
-	int n{ 0 };
-	std::cin >> n;
+	// the root represents how far down the heap to shift
+	int root = start;
 	
-	GenerateNumbersVector(numbers, n);
-	std::cout << "Vector from 1 to n: " << std::endl;
-	for (auto& number : numbers)
+	while (root * 2 + 1 <= end) // (whilst the root has at least 1 child in the priority queue)
 	{
-		std::cout << number << ", ";
-	}
-	Render(numbers, 1000);
-	
-	std::cout << "\n\n\nShuffled Vector : " << std::endl;
-	FisherYatesShuffle(numbers);
-	for (auto& number : numbers)
-	{
-		std::cout << number << ", ";
-	}
-	Render(numbers, 1000);
-	
-	std::cout << "\n\n\Heapsort : " << std::endl;
-	HeapSort(numbers);
-	
-	Render(numbers, 1000);
-	
+		// point to the left child
+		int child = root * 2 + 1;
 
-	
-	// Main loop that continues until we call window.close()
-	while (window.isOpen())
-	{
-		// Handle any pending SFML events
-		// These cover keyboard, mouse,joystick etc.
-		sf::Event event{};
-		while (window.pollEvent(event))
+		// If the child has a sibling and the child's value is less than its sibling's...
+		if (child + 1 < end && numbersVector[child] < numbersVector[child + 1])
 		{
-			switch (event.type)
-			{
-			case sf::Event::Closed:
-				window.close();
-				break;
-			default:
-				break;
-			}
+			// ...Point to the right child instead
+			child++;
 		}
+		// if the root is less than the child, we aren't in max-heap order anymore...
+		if (numbersVector[root] < numbersVector[child])
+		{
+			// So swap them to maintain order...
+			swap_variables(numbersVector[root], numbersVector[child], 50);
+			root = child; // Set the root to the child to continue shifting down the row
+		} else
+		{
+			return;
+		}
+	}
+}
 
-		// We must clear the window each time around the loop
-		window.clear();
-
-		Render(numbers, 1.f);
-
-
-		// Get the window to display its contents
-		window.display();
+void heapify(std::vector<int>& numbersVector, const int count)
+{
+	// Start at the index of the last parent node of the max-heap in the
+	// priority queue
+	int start = (count - 2) / 2;
+	while (start >= 0)
+	{
+		// Shift down the node at the start index to the proper place such that
+		// all nodes below the start index are in max-heap order
+		shift_down(numbersVector, start, count - 1);
+		start--;
 	}
 
-	return 0;
+	// After shifting down, all elements should be in max heap order...
+	std::cout << "Heapified Vector:\n";
+	for (auto& number : numbersVector)
+	{
+		std::cout << number << ", ";
+	}
+}
+
+void heap_sort(std::vector<int>& numbersVector)
+{
+	// Place in a max-heap order...
+	heapify(numbersVector, numbersVector.size());
+
+	render(numbersVector, 1000.f);
+
+	int end = numbersVector.size() - 1;
+
+	int count{ 0 };
+
+	while (end > 0)
+	{
+		// Swap the root of the heap (the maximum value of the vector / the first item in the priority queue)
+		// with the current element of the heap
+		swap_variables(numbersVector[end], numbersVector[0], 100);
+
+		// Decrement the size of the heap so that the previous max value will stay in its place
+		end--;
+
+		// Put the heap back into max heap order
+		shift_down(numbersVector, 0, end);
+		std::cout << "\nStep " + std::to_string(count++) << ":\n";
+		for (auto& number : numbersVector)
+		{
+			std::cout << number << ", ";
+		}
+	}
 }
