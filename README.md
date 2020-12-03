@@ -8,4 +8,5 @@ The program displays the contents of the vector when it is shuffled and heapifie
 ![Shuffled and Heapified](/showcase/shuffled.png "Shuffled and Heapified vectors")
 
 And then the animation plays. Here, n = 50:
+
 ![Heapsort Animation](/showcase/anim.gif "Heapsort Animation")
