@@ -40,7 +40,7 @@ int main()
 	}
 	render(NUMBERS, -1, 1000);
 	
-	std::cout << "\n\n\Heapsort : " << std::endl;
+	std::cout << "\n\n\nHeapsort : " << std::endl;
 	heap_sort(NUMBERS);
 	
 	render(NUMBERS, -1, 1000);
@@ -92,7 +92,7 @@ void fisher_yates_shuffle(std::vector<int>& vectorToShuffle)
 	{
 		// Generate a random number and swap the current index
 		// with the random index
-		const auto randomNum{ random_range(0, vectorToShuffle.size()) };
+		const int randomNum{ random_range(0, static_cast<int>(vectorToShuffle.size())) };
 		swap_variables(vectorToShuffle[i], vectorToShuffle[randomNum], 10);
 	}
 }
@@ -103,7 +103,7 @@ int random_range(const int min, const int max)
 	if (first)
 	{
 		//seeding for the first time only!
-		srand(time(nullptr));
+		srand(static_cast<unsigned>(time(nullptr)));
 		first = false;
 	}
 	return min + rand() % ((max)-min);
@@ -125,10 +125,10 @@ void render(const std::vector<int>& numbersVector, const int swappedValue, const
 
 	const float rectangleWidth{ static_cast<float>(WINDOW.getSize().x) / numbersVector.size() - 1 };
 
-	for (auto i = 0; i < numbersVector.size(); ++i)
+	for (int i = 0; i < static_cast<int>(numbersVector.size()); ++i)
 	{
 		sf::RectangleShape rectangle(
-			{ rectangleWidth, (static_cast<float>(numbersVector[i] + 1) / numbersVector.size()) * (static_cast<float>(WINDOW.getSize().y) - 100) }
+			{ rectangleWidth, (static_cast<float>(numbersVector[i] + 1) / static_cast<float>(numbersVector.size())) * (static_cast<float>(WINDOW.getSize().y) - 100) }
 		);
 		rectangle.setOrigin(0, rectangle.getGlobalBounds().height);
 
@@ -196,11 +196,11 @@ void heapify(std::vector<int>& numbersVector, const int count)
 void heap_sort(std::vector<int>& numbersVector)
 {
 	// Place in a max-heap order...
-	heapify(numbersVector, numbersVector.size());
+	heapify(numbersVector, static_cast<int>(numbersVector.size()));
 
 	render(numbersVector, -1, 1000.f);
 
-	int end = numbersVector.size() - 1;
+	int end = static_cast<int>(numbersVector.size()) - 1;
 
 	int count{ 0 };
 
